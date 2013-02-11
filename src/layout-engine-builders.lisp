@@ -1,7 +1,6 @@
 (in-package :cl-openddr)
 
 (def-layout-engine-builder android-mobile-browser-builder
-    :layout-engine-browser-builder
     (user-agent layout-engine layout-engine-version hinted-width hinted-height)
   (when (or (not (contains-android user-agent))
             (not (has-mozilla-pattern user-agent))
