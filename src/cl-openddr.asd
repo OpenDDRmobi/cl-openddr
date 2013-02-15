@@ -1,4 +1,3 @@
-;;; qimt - A HTML toolkit for Common Lisp
 ;;; Copyright (C) 2013 Eivind Bergem <bergem@copyleft.no>
 ;;; Copyright (C) 2013 Asgeir Bjørlykke <asgeir@copyleft.no>
 ;;;
@@ -13,4 +12,5 @@
                (:file "base")
                (:file "hinted-resolution")
                (:file "layout-engine-builders")
+               (:file "device-database")
                ))
