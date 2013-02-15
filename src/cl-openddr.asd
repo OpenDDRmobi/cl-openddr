@@ -11,5 +11,6 @@
   :depends-on (:cl-ppcre)
   :components ((:file "package")
                (:file "base")
+               (:file "hinted-resolution")
                (:file "layout-engine-builders")
                ))
