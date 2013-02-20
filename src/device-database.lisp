@@ -36,15 +36,15 @@
                              (setf name
                                    (intern (string-upcase (cl-ppcre:regex-replace-all "_" name "-"))
                                            :keyword))
-                             (when (ignore-errors (parse-integer value))
-                               (setf value (parse-integer value)))
-                             (when (equalp value "true")
-                               (setf value t))
-                             (when (equalp value "false")
-                               (setf value nil))
+                             (cond ((ignore-errors (parse-integer value))
+                                    (setf value (parse-integer value)))
+                                   ((equalp value "true")
+                                    (setf value t))
+                                   ((equalp value "false")
+                                    (setf value nil)))
                              (push name res)
                              (push value res)))))
-                 (cons id (cons parentid (reverse res)))))))
+                 (cons (sb-ext:string-to-octets id) (cons parentid (reverse res)))))))
 
 ;; (defvar *foo* nil)
 ;; (progn
@@ -57,11 +57,23 @@
 ;;   (format out "~S" *foo*))
 
 
+(defun transform-to-utf8 (data)
+  (labels ((ts (string)
+             (sb-ext:string-to-octets string :external-format :utf-8)))
+    (list
+     (ts (car data))
+     (ts (cadr data))
+     (loop for (key value . rest) on (cddr data) by #'cddr
+           collect key
+           collect (if (stringp value)
+                       (ts value)
+                       value)))))
+
 (defvar *device-database*
   #.(let ((hash (make-hash-table :test #'equalp)))
       (loop for x in (read (open (asdf:system-relative-pathname :cl-openddr "device-data.data")))
          do (setf (gethash (car x) hash)
-                  (cdr x)))
+                  (cdr x))) 
     hash))
 
 (defun device-lookup (device)
@@ -75,4 +87,3 @@
        unless (member key seen)
        collect (progn (push key seen)
                       val))))
-

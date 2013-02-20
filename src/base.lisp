@@ -1,8 +1,8 @@
 (in-package :cl-openddr)
 
 (defclass identified ()
-  ((vendor :initarg vendor :accessor vendor)
-   (model :initarg model :accessor model)
+  ((vendor :initarg :vendor :accessor vendor)
+   (model :initarg :model :accessor model)
    (version-major :initform nil :initarg :version-major :accessor version-major)
    (version-minor :initform nil :initarg :version-minor :accessor version-minor)
    (version-micro :initform nil :initarg :version-micro :accessor version-micro)
@@ -12,10 +12,13 @@
    (display-width :initform nil :initarg :display-width :accessor display-width)
    (display-height :initform nil :initarg :display-height :accessor display-height)
    (confidence :initform nil :initarg :confidence :accessor confidence)
-   (layout-engine :initform nil :initarg :layout-engine :accessor layout-engine)
+   (layout-engine :initform nil :initarg :layout-engine :accessor layout-engine-of)
    (layout-engine-version :initform nil :initarg :layout-engine-version :accessor layout-engine-version)
    ))
 
+(defmethod print-object ((obj identified) stream)
+  (print-unreadable-object (obj stream :type t :identity t)
+    (format stream "~A ~A ~A.~A" (vendor obj) (model obj) (version-major obj) (version-minor obj))))
 
 (defmacro def-layout-engine-builder (name params &body body)
   `(defun ,name ,params 
