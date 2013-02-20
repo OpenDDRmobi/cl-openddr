@@ -12,5 +12,6 @@
                (:file "base")
                (:file "hinted-resolution")
                (:file "layout-engine-builders")
+               (:file "os-builders")
                (:file "device-database")
                ))

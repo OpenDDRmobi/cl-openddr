@@ -1,3 +1,4 @@
+(declaim (optimize (speed 0) (debug 3) (safety 3)))
 (in-package :cl-openddr)
 
 (defclass identified ()
@@ -25,11 +26,16 @@
      (block defbuilder
        ,@body)))
 
+(defmacro def-os-builder (name params &body body)
+  `(defun ,name ,params 
+     (block defbuilder
+       ,@body)))
+
 (defmacro user-agent-contains (regexp stringvar)
-  `(cl-ppcre:scan ,regexp (list :SEQUENCE ,stringvar)))
+  `(cl-ppcre:scan ,regexp ,stringvar))
 
 (defun contains-android (user-agent)
-  (user-agent-contains "Android" user-agent))
+  (user-agent-contains '(:sequence "Android") user-agent))
 
 (defun has-mozilla-pattern (user-agent)
   (register-groups-bind (pre opera-or-mozilla version inside post)
@@ -49,6 +55,12 @@
           (register-groups-bind (v) (".*Version/(\\d+.\\d+).*" post)
             (setf version v)))
         (values t version)))))
+
+(defun get-inside-pattern (user-agent)
+  (register-groups-bind (pre opera-or-mozilla version inside post)
+      ("(.*?)((?:Mozilla)|(?:Opera))[/ ](\\d+\\.\\d+).*?\\(((?:.*?)(?:.*?\\(.*?\\))*(?:.*?))\\)(.*)" user-agent)
+    (declare (ignore opera-or-mozilla pre version post))
+    inside))
 
 (defun contains-ios-devices (user-agent)
   (or (cl-ppcre:scan ".*(?!like).iPad.*" user-agent)
