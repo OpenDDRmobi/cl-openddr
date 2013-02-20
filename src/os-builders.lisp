@@ -38,8 +38,8 @@
              (when version
                (setf (version model) version))
              (loop for x in (list major minor micro nano)
-                for setter in (list '#(setf version-major) '#(setf version-minor) '#(setf version-micro)
-                                    '#(setf version-nano))
+                for setter in (list #'(setf version-major) #'(setf version-minor) #'(setf version-micro)
+                                    #'(setf version-nano))
                 do (when x
                      (funcall setter x model))))
            (register-groups-bind (build)
@@ -67,6 +67,48 @@
         (setf (description model) g2)))
     model))
 
+(def-os-builder macos-mozilla-builder (user-agent)
+  (when (or (not (scan '(:sequence "Macintosh") user-agent)))
+    (return-from defbuilder nil))
+  (let ((model (make-instance 'os-model
+                              :vendor "Apple"
+                              :model "Mac OS X"
+                              :confidence 60)))
+    (register-groups-bind (version g1 g2 g3)
+        (".*(?:(?:Intel)|(?:PPC)).?Mac OS X.?((\\d+)[_\\.](\\d+)(?:[_\\.](\\d+))?).*" (get-inside-pattern user-agent))
+      (setf (confidence model) 80)
+      (when version
+        (setf (version model) version))
+      (loop for x in (list g1 g2 g3)
+         for setter in (list #'(setf version-major) #'(setf version-minor) #'(setf version-micro)
+                             #'(setf version-nano))
+         do (when x
+              (funcall setter x model))))
+    model))
+
+
+(def-os-builder ios-mozilla-builder (user-agent)
+  (when (or (not (contains-ios-devices user-agent)))
+    (return-from defbuilder nil))
+  (let ((model (make-instance 'os-model
+                              :vendor "Apple"
+                              :model "IOS"
+                              :confidence 40)))
+    (register-groups-bind (version g1 g2 g3)
+        (".*(?:iPhone)?.?OS.?((\\d+)_(\\d+)(?:_(\\d+))?).*" (get-inside-pattern user-agent))
+      (setf (confidence model) 90)
+      (when version
+        (setf (version model) version))
+      (loop for x in (list g1 g2 g3)
+         for setter in (list #'(setf version-major) #'(setf version-minor) #'(setf version-micro)
+                             #'(setf version-nano))
+         do (when x
+              (funcall setter x model))))
+    model))
+
 
 ;(linux-mozilla-builder "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.17 (KHTML, like Gecko) Chrome/24.0.1312.56 Safari/537.17")
 
+;(macos-mozilla-builder "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_6_6; zh-cn) AppleWebKit/533.20.25 (KHTML, like Gecko) Version/5.0.4 Safari/533.20.27")
+
+;(ios-mozilla-builder "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25")
