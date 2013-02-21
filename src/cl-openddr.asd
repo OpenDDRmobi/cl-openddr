@@ -14,4 +14,6 @@
                (:file "layout-engine-builders")
                (:file "os-builders")
                (:file "device-database")
+               (:file "trie")
+               (:file "device-builders")
                ))

@@ -31,6 +31,11 @@
      (block defbuilder
        ,@body)))
 
+(defmacro def-device-builder (name params &body body)
+  `(defun ,name ,params 
+     (block defbuilder
+       ,@body)))
+
 (defmacro user-agent-contains (regexp stringvar)
   `(cl-ppcre:scan ,regexp ,stringvar))
 
