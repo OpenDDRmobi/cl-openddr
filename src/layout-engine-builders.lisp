@@ -1,3 +1,4 @@
+(declaim (optimize (speed 0) (debug 3) (safety 3)))
 (in-package :cl-openddr)
 
 (def-layout-engine-builder android-mobile-browser-builder
@@ -10,13 +11,13 @@
         (confidence 70)
         (safari-reg ".*Safari/([0-9\\.]+).*?")
         (version-reg ".*Version/([0-9\\.]+).*?"))
-
+    
     (if (scan version-reg user-agent)
         (register-groups-bind (version)
              (version-reg user-agent)
           (loop for x in (split '(:sequence #\.) version)
-             for acc in '(#'(setf version-major) #'(setf version-minor) #'(setf version-micro) #'(setf version-nano))
-             do (funcall acc x)))
+             for acc in (list #'(setf version-major) #'(setf version-minor) #'(setf version-micro) #'(setf version-nano))
+             do (funcall acc x identified)))
         (progn
           (setf (version-minor identified) 0)
           (setf (version-major identified) 1)))
@@ -136,3 +137,6 @@
  ;; #'internet-explorer-browser-builder
  ;; "Mozilla/5.0 (compatible; MSIE 7.0; Windows NT 5.0; Trident/4.0; FBSMTWB; .NET CLR 2.0.34861; .NET CLR 3.0.3746.3218; .NET CLR 3.5.33652; msn OptimizedIE8;ENUS)")
 
+(call-layout-engine-builder 
+ #'android-mobile-browser-builder
+ "10.47.243.118 - - [21/Feb/2013:09:03:21 +0100] \"GET /favicon.ico HTTP/1.1\" 404 447 \"http://10.47.243.42/\" \"Mozilla/5.0 (Linux; U; Android 2.3.4; nb-no; SonyEricssonMT15i Build/4.0.2.A.0.62) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1\"")
