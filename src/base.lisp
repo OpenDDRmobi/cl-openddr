@@ -68,9 +68,9 @@
     inside))
 
 (defun contains-ios-devices (user-agent)
-  (or (cl-ppcre:scan ".*(?!like).iPad.*" user-agent)
-      (cl-ppcre:scan ".*(?!like).iPod.*" user-agent)
-      (cl-ppcre:scan ".*(?!like).iPhone.*" user-agent)))
+  (or (cl-ppcre:scan "(?!like).iPad.*" user-agent)
+      (cl-ppcre:scan "(?!like).iPod.*" user-agent)
+      (cl-ppcre:scan "(?!like).iPhone.*" user-agent)))
 
 (defun contains-blackberry-or-rim (user-agent)
   (cl-ppcre:scan ".*[Bb]lack.?[Bb]erry.*|.*RIM.?Tablet.?OS.*" user-agent))

@@ -7,7 +7,7 @@
 (asdf:defsystem :cl-openddr
   :version "0"
   :serial t
-  :depends-on (:cl-ppcre)
+  :depends-on (:cl-ppcre :cxml)
   :components ((:file "package")
                (:file "base")
                (:file "hinted-resolution")

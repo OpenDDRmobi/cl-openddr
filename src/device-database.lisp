@@ -101,7 +101,7 @@
 
 ;; "org.openddr.simpleapi.oddr.builder.device.AndroidDeviceBuilder"
 
-(defun load-android-ids (file)
+(defun load-builder-ids (file class#)
   (let ((source (cxml:make-source (open file :element-type '(unsigned-byte 8))))
         (res nil))
     (loop for x = (multiple-value-list 
@@ -112,23 +112,30 @@
                                           (when (string= name* "class")
                                             (setf class val)))
                                         source)
-                 (if (not (string= class "org.openddr.simpleapi.oddr.builder.device.AndroidDeviceBuilder"))
+                 (if (not (string= class class#))
                      (klacks:peek-next source)
                      (progn 
-                       (let ((id nil))
+                       (let ((id nil)
+                             (values nil))
                          (loop with finished = nil
                             while (not finished)
                             do (multiple-value-bind (type b c d) 
                                    (klacks:peek-next source)
                                         ;(declare (ignore b d))
-                                 (format t "~S~%" (list type b c d))
                                  (when (and (eq type :end-element)
                                             (equalp c "builder"))
                                    (setf finished t)
                                    ;(return-from 'load-android-ids)
                                    )
+                                 (when (and (eq type :end-element)
+                                            (equalp c "device"))
+                                   (if (cdr values)
+                                       (push (cons (reverse values) id) res)
+                                       (push (cons (car values) id) res)))
                                  (when (and (eq type :start-element)
                                             (equalp c "device"))
+                                   (setf id nil)
+                                   (setf values nil)
                                    (KLACKS:MAP-ATTRIBUTES (lambda (namespace name* qname val bool)
                                                             (declare (ignore namespace qname bool))
                                                             (when (string= name* "id")
@@ -140,12 +147,62 @@
                                        (klacks:peek-next source)
                                      (declare (ignore c d))
                                      (assert (eq type :characters))
-                                     (push (cons b id) res))))))))))
+                                     (push b values)                                     
+                                     )))))))))
     (reverse res)
     ))
 
-(defun token-device-lookup-table ()
+(defun token-device-lookup-table (class)
   (let ((lookups
-         (load-android-ids "/home/asgeir/work/OpenDDR-Resources/resources/BuilderDataSource.xml")))
+         (load-builder-ids "/home/asgeir/work/OpenDDR-Resources/resources/BuilderDataSource.xml"
+                           class)))
     (setf lookups (sort lookups #'> :key (lambda (x) (length (car x)))))
     lookups))
+
+
+(defun lookup-twostep (string trie)
+  (loop for c from 0 below (length string)
+     for lookup = (lookup-in-data-trie string c trie)
+     do
+       (when lookup
+         (let* ((res (car (sort lookup #'> :key (lambda (x) (length (car x))))))
+               (pos (+ c (length (car res))))
+               (trie (cdr res)))
+           (loop for c from pos below (length string)
+              for lookup = (lookup-in-data-trie string c trie)
+              do
+                (when lookup
+                  (let* ((res (car (sort lookup #'> :key (lambda (x) (length (car x)))))))
+                    (return-from lookup-twostep
+                      (cdr res)))))))))
+
+(defun two-step-data-trie ()
+  (construct-data-trie
+   (loop for (id sub) in (bucket-sort-stringlist
+                          (loop for (patterns . id) in (token-device-lookup-table
+                                                        "org.openddr.simpleapi.oddr.builder.device.TwoStepDeviceBuilder")
+                             append (loop for p in (apply #'split-in-tokens patterns)
+                                       collect (append (mapcar #'string-downcase p) id))))
+      collect (progn
+                (cons id (construct-data-trie sub))))))
+
+
+(defun split-in-tokens (token1-reg token2)
+  (if (string= token1-reg "[Bb]lack.?[Bb]erry")
+      (list (list "blackberry" token2)
+            (list "black∗berry" token2))
+      (list (list token1-reg token2))))
+
+
+
+
+(defun bucket-sort-stringlist (elements )
+  (let ((buckets (make-hash-table :test #'equalp)))
+    (loop for x in elements
+       do (when (cdr x)
+            (push (cdr x)
+                  (gethash (car x) buckets))))
+    (loop for x being the hash-keys of buckets
+              collect (list
+                       x
+                       (reverse (gethash x buckets))))))
