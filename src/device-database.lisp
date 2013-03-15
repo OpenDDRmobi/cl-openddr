@@ -91,8 +91,6 @@
 ;; (device-lookup "LT26i")
 ;; (device-lookup "Xperia Neo")
 ;; 
-"10.47.243.118 - - [21/Feb/2013:09:03:21 +0100] \"GET /favicon.ico HTTP/1.1\" 404 447 \"http://10.47.243.42/\" \"Mozilla/5.0 (Linux; U; Android 2.3.4; nb-no; SonyEricssonMT15i Build/4.0.2.A.0.62) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1\""
-
 ;; (parse-string "()")
 
 ;; (cl-ppcre:scan '(:alternation 

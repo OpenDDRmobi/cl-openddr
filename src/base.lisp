@@ -8,6 +8,7 @@
    (version-minor :initform nil :initarg :version-minor :accessor version-minor)
    (version-micro :initform nil :initarg :version-micro :accessor version-micro)
    (version-nano :initform nil :initarg :version-nano :accessor version-nano)
+   (version-build :initform nil :initarg :version-build :accessor version-build)
    (reference-browser :initform nil :initarg :reference-browser :accessor reference-browser)
    (reference-browser-version :initform nil :initarg :reference-browser-version :accessor reference-browser-version)
    (display-width :initform nil :initarg :display-width :accessor display-width)
@@ -21,10 +22,17 @@
   (print-unreadable-object (obj stream :type t :identity t)
     (format stream "~A ~A ~A.~A" (vendor obj) (model obj) (version-major obj) (version-minor obj))))
 
+(defvar *browser-builders* nil)
+
 (defmacro def-layout-engine-builder (name params &body body)
-  `(defun ,name ,params 
-     (block defbuilder
-       ,@body)))
+  `(progn
+     (push (cons ',name 
+                 (lambda ,params
+                   (block defbuilder
+                     ,@body)))
+           *browser-builders*)))
+
+
 
 (defmacro def-os-builder (name params &body body)
   `(defun ,name ,params 

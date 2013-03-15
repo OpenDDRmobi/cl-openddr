@@ -1,8 +1,6 @@
 (declaim (optimize (speed 3) (debug 0) (safety 0)))
 (in-package :cl-openddr)
 
-
-
 (defun construct-trie (strings &optional (accum ""))
   (setf strings (sort strings #'string<))
   (let ((buckets (make-hash-table)))

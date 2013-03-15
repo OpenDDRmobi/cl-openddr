@@ -114,6 +114,17 @@
   (let ((id (lookup-twostep (string-downcase user-agent) #.(two-step-data-trie))))
       (when id
         (let ((d (make-instance 'device :id id
-                                    :confidence 
-                                    80)))
-              d))))
+                                :confidence 
+                                80)))
+          d))))
+
+(defun detect-device (user-agent)
+  (loop for x in (list #'android-device-builder 
+                       #'ios-device-builder
+                       #'symbian-device-builder
+                       #'winphone-device-builder
+                       #'twostep-device-builder)
+     for res = (funcall x user-agent)
+     when res
+     do (return-from detect-device res)
+       ))
