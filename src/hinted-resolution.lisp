@@ -52,7 +52,7 @@
 ;; (device-lookup "MOT-v600")
 ;; (detect-device
 ;;  "MOT-V600/0B.09.38R MIB/2.2 Profile/MIDP-2.0 Configuration/CLDC-1.0")
-;; (device-lookup 
+;; (detect-device 
 ;;  "MOT-V600/0B.09.38R MIB/2.2 Profile/MIDP-2.0 Configuration/CLDC-1.0")
 
 ;; (detect-device

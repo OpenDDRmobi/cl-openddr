@@ -29,6 +29,12 @@
        (loop for (pattern . id) in data do (setf (gethash pattern hash) id))
        hash))))
 
+(defun trie-from-hash (hash-table)
+  (let ((data (loop for x being the hash-keys of hash-table 
+                 collect x)))
+    (construct-trie 
+      (mapcar (lambda (x) (string-downcase x)) data))))
+
 
 (def-device-builder android-device-builder (user-agent)
   (let ((inside (string-downcase (get-inside-pattern user-agent))))
@@ -118,13 +124,27 @@
                                 80)))
           d))))
 
+(def-device-builder simple-device-builder (user-agent)
+  (let ((trie #. (trie-from-hash *device-database*)))
+    (multiple-value-bind (device start end)
+        (lookup-string 
+         (string-downcase user-agent)
+         trie)
+      (declare (ignore start end))
+      (when device
+        (let ((d (make-instance 'device :id device)))
+          d)))))
+
 (defun detect-device (user-agent)
   (loop for x in (list #'android-device-builder 
                        #'ios-device-builder
                        #'symbian-device-builder
                        #'winphone-device-builder
-                       #'twostep-device-builder)
+                       #'twostep-device-builder
+                       #'simple-device-builder)
      for res = (funcall x user-agent)
      when res
      do (return-from detect-device res)
        ))
+
+
